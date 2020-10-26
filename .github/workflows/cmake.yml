@@ -37,9 +37,17 @@ jobs:
       
     - name: Build
       run: python build.py
-      
+
+    - if: matrix.os == 'windows-latest'
+      name: Unzip
+      run: Expand-Archive -Path builds/${{ matrix.build }} -DestinationPath artifacts
+
+    - if: matrix.os != 'windows-latest'
+      name: Unzip
+      run: unzip builds/${{ matrix.build }} -d artifacts
+
     - name: Upload ${{ matrix.os }}
       uses: actions/upload-artifact@v2
       with:
         name: DiscordRpc-${{ matrix.os }}
-        path: builds/${{ matrix.build }}
+        path: artifacts
