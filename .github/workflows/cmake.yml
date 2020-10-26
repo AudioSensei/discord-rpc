@@ -42,4 +42,4 @@ jobs:
       uses: actions/upload-artifact@v2
       with:
         name: DiscordRpc-${{ matrix.os }}
-        path: builds\${{ matrix.build }}
+        path: builds/${{ matrix.build }}
