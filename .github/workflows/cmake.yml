@@ -1,0 +1,34 @@
+name: Build
+
+on: [push, pull_request]
+
+jobs:
+  build:
+
+    name: Build on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [windows-latest, ubuntu-latest, macos-latest]
+    timeout-minutes: 30
+
+    steps:
+    - uses: actions/checkout@v2.3.3
+      
+    - name: actions-setup-cmake
+      uses: jwlawson/actions-setup-cmake@v1.4
+      
+    - name: Setup Python
+      uses: actions/setup-python@v2
+      
+    - name: Install click
+      run: pip install click
+      
+    - name: Build
+      run: python build.py
+      
+    - name: Upload ${{ matrix.os }}
+      uses: actions/upload-artifact@v2
+      with:
+        name: DiscorRpc-${{ matrix.os }}
+        path: builds
