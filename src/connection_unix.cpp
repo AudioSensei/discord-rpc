@@ -52,6 +52,7 @@ static const char* GetTempPath()
 
 bool BaseConnection::Open(int pipe, int& usedPipe)
 {
+    usedPipe = -1;
     const char* tempPath = GetTempPath();
     auto self = reinterpret_cast<BaseConnectionUnix*>(this);
     self->sock = socket(AF_UNIX, SOCK_STREAM, 0);
