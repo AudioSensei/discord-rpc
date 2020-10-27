@@ -1,3 +1,4 @@
+#ifdef DISCORD_WINDOWS
 #include "connection.h"
 
 #define WIN32_LEAN_AND_MEAN
@@ -10,7 +11,7 @@
 
 int GetProcessId()
 {
-    return (int)::GetCurrentProcessId();
+    return static_cast<int>(GetCurrentProcessId());
 }
 
 struct BaseConnectionWin : public BaseConnection {
@@ -31,32 +32,33 @@ static BaseConnectionWin Connection;
     c = nullptr;
 }
 
-bool BaseConnection::Open(int pipe)
+bool BaseConnection::Open(int pipe, int& used_pipe)
 {
-    wchar_t pipeName[]{L"\\\\?\\pipe\\discord-ipc-0"};
-    const size_t pipeDigit = sizeof(pipeName) / sizeof(wchar_t) - 2;
-    pipeName[pipeDigit] += pipe;
+    const std::wstring pipeTemplate = L"\\\\?\\pipe\\discord-ipc-";
     auto self = reinterpret_cast<BaseConnectionWin*>(this);
-    for (;;) {
+    used_pipe = -1;
+    for (auto pipeNum = pipe;;) {
+        auto pipeName = pipeTemplate + std::to_wstring(pipeNum);
+
         self->pipe = ::CreateFileW(
-          pipeName, GENERIC_READ | GENERIC_WRITE, 0, nullptr, OPEN_EXISTING, 0, nullptr);
+          pipeName.c_str(), GENERIC_READ | GENERIC_WRITE, 0, nullptr, OPEN_EXISTING, 0, nullptr);
         if (self->pipe != INVALID_HANDLE_VALUE) {
             self->isOpen = true;
+            used_pipe = pipeNum;
             return true;
         }
 
-        auto lastError = GetLastError();
+        const auto lastError = GetLastError();
         if (lastError == ERROR_FILE_NOT_FOUND) {
-            if (pipeName[pipeDigit] < L'9') {
-                pipeName[pipeDigit]++;
-                continue;
-            }
-        }
-        else if (lastError == ERROR_PIPE_BUSY) {
-            if (!WaitNamedPipeW(pipeName, 10000)) {
+            if (++pipeNum > 9) {
                 return false;
             }
             continue;
+        }
+        if (lastError == ERROR_PIPE_BUSY) {
+            if (WaitNamedPipeW(pipeName.c_str(), 10000)) {
+                continue;
+            }
         }
         return false;
     }
@@ -88,7 +90,7 @@ bool BaseConnection::Write(const void* data, size_t length)
     if (!data) {
         return false;
     }
-    const DWORD bytesLength = (DWORD)length;
+    const auto bytesLength = static_cast<DWORD>(length);
     DWORD bytesWritten = 0;
     return ::WriteFile(self->pipe, data, bytesLength, &bytesWritten, nullptr) == TRUE &&
       bytesWritten == bytesLength;
@@ -111,7 +113,7 @@ bool BaseConnection::Read(void* data, size_t length)
     DWORD bytesAvailable = 0;
     if (::PeekNamedPipe(self->pipe, nullptr, 0, nullptr, &bytesAvailable, nullptr)) {
         if (bytesAvailable >= length) {
-            DWORD bytesToRead = (DWORD)length;
+            auto bytesToRead = static_cast<DWORD>(length);
             DWORD bytesRead = 0;
             if (::ReadFile(self->pipe, data, bytesToRead, &bytesRead, nullptr) == TRUE) {
                 assert(bytesToRead == bytesRead);
@@ -127,3 +129,4 @@ bool BaseConnection::Read(void* data, size_t length)
     }
     return false;
 }
+#endif

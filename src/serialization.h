@@ -70,7 +70,7 @@ public:
     static const bool kNeedFree = false;
     void* Malloc(size_t size)
     {
-        char* res = buffer_;
+        auto res = buffer_;
         buffer_ += size;
         if (buffer_ > end_) {
             buffer_ = res;

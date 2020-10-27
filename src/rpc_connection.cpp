@@ -27,7 +27,7 @@ void RpcConnection::Open()
         return;
     }
 
-    if (state == State::Disconnected && !connection->Open(Instance.pipe)) {
+    if (state == State::Disconnected && !connection->Open(Instance.pipe, Instance.usedPipe)) {
         return;
     }
 
@@ -64,6 +64,7 @@ void RpcConnection::Close()
         onDisconnect(lastErrorCode, lastErrorMessage);
     }
     connection->Close();
+    usedPipe = -1;
     state = State::Disconnected;
 }
 
@@ -86,7 +87,7 @@ bool RpcConnection::Read(JsonDocument& message)
     }
     MessageFrame readFrame;
     for (;;) {
-        bool didRead = connection->Read(&readFrame, sizeof(MessageFrameHeader));
+        auto didRead = connection->Read(&readFrame, sizeof(MessageFrameHeader));
         if (!didRead) {
             if (!connection->isOpen) {
                 lastErrorCode = (int)ErrorCode::PipeClosed;

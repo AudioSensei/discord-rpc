@@ -44,6 +44,7 @@ struct RpcConnection {
     void (*onDisconnect)(int errorCode, const char* message){nullptr};
     char appId[64]{};
     int pipe;
+    int usedPipe = -1;
     int lastErrorCode{0};
     char lastErrorMessage[256]{};
     RpcConnection::MessageFrame sendFrame;
