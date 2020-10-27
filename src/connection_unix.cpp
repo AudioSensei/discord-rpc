@@ -1,3 +1,4 @@
+#if defined(DISCORD_OSX) || defined(DISCORD_LINUX)
 #include "connection.h"
 
 #include <errno.h>
@@ -49,7 +50,7 @@ static const char* GetTempPath()
     c = nullptr;
 }
 
-bool BaseConnection::Open(int pipe)
+bool BaseConnection::Open(int pipe, int& usedPipe)
 {
     const char* tempPath = GetTempPath();
     auto self = reinterpret_cast<BaseConnectionUnix*>(this);
@@ -68,6 +69,7 @@ bool BaseConnection::Open(int pipe)
         int err = connect(self->sock, (const sockaddr*)&PipeAddr, sizeof(PipeAddr));
         if (err == 0) {
             self->isOpen = true;
+            usedPipe = pipeNum;
             return true;
         }
     }
@@ -122,3 +124,4 @@ bool BaseConnection::Read(void* data, size_t length)
     }
     return res == (int)length;
 }
+#endif

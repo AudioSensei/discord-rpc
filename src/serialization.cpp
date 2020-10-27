@@ -15,7 +15,7 @@ void NumberToString(char* dest, T number)
         number = -number;
     }
     char temp[32];
-    int place = 0;
+    auto place = 0;
     while (number) {
         auto digit = number % 10;
         number = number / 10;

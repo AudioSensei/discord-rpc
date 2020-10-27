@@ -33,7 +33,7 @@ struct Backoff {
     int64_t nextDelay()
     {
         ++fails;
-        int64_t delay = (int64_t)((double)current * 2.0 * rand01());
+        auto delay = (int64_t)((double)current * 2.0 * rand01());
         current = std::min(current + delay, maxAmount);
         return current;
     }

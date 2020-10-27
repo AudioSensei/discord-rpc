@@ -15,6 +15,7 @@ static const char* APPLICATION_ID = "345229890980937739";
 static int FrustrationLevel = 0;
 static int64_t StartTime;
 static int SendPresence = 1;
+static int Data = 1;
 
 static int prompt(char* line, size_t size)
 {
@@ -36,7 +37,7 @@ static void updateDiscordPresence()
     if (SendPresence) {
         char buffer[256];
         DiscordRichPresence discordPresence;
-        memset(&discordPresence, 0, sizeof(discordPresence));
+        memset(&discordPresence, 0, sizeof discordPresence);
         discordPresence.state = "West of House";
         sprintf(buffer, "Frustration level: %d", FrustrationLevel);
         discordPresence.details = buffer;
@@ -59,35 +60,66 @@ static void updateDiscordPresence()
     }
 }
 
-static void handleDiscordReady(const DiscordUser* connectedUser)
+static void handleDiscordReady(const DiscordUser* connectedUser, void* userData)
 {
-    printf("\nDiscord: connected to user %s#%s - %s\n",
+    printf("\nDiscord: connected to user %s#%s - %s on pipe %i\n",
            connectedUser->username,
            connectedUser->discriminator,
-           connectedUser->userId);
+           connectedUser->userId,
+           Discord_GetUsedPipeId());
+    if (*(int*)userData == Data) {
+        printf("\nUserData correct\n");
+    }
+    else {
+        printf("\nUserData not correct\n");
+    }
 }
 
-static void handleDiscordDisconnected(int errcode, const char* message)
+static void handleDiscordDisconnected(int errcode, const char* message, void* userData)
 {
     printf("\nDiscord: disconnected (%d: %s)\n", errcode, message);
+    if (*(int*)userData == Data) {
+        printf("\nUserData correct\n");
+    }
+    else {
+        printf("\nUserData not correct\n");
+    }
 }
 
-static void handleDiscordError(int errcode, const char* message)
+static void handleDiscordError(int errcode, const char* message, void* userData)
 {
     printf("\nDiscord: error (%d: %s)\n", errcode, message);
+    if (*(int*)userData == Data) {
+        printf("\nUserData correct\n");
+    }
+    else {
+        printf("\nUserData not correct\n");
+    }
 }
 
-static void handleDiscordJoin(const char* secret)
+static void handleDiscordJoin(const char* secret, void* userData)
 {
     printf("\nDiscord: join (%s)\n", secret);
+    if (*(int*)userData == Data) {
+        printf("\nUserData correct\n");
+    }
+    else {
+        printf("\nUserData not correct\n");
+    }
 }
 
-static void handleDiscordSpectate(const char* secret)
+static void handleDiscordSpectate(const char* secret, void* userData)
 {
     printf("\nDiscord: spectate (%s)\n", secret);
+    if (*(int*)userData == Data) {
+        printf("\nUserData correct\n");
+    }
+    else {
+        printf("\nUserData not correct\n");
+    }
 }
 
-static void handleDiscordJoinRequest(const DiscordUser* request)
+static void handleDiscordJoinRequest(const DiscordUser* request, void* userData)
 {
     int response = -1;
     char yn[4];
@@ -95,9 +127,15 @@ static void handleDiscordJoinRequest(const DiscordUser* request)
            request->username,
            request->discriminator,
            request->userId);
+    if (*(int*)userData == Data) {
+        printf("\nUserData correct\n");
+    }
+    else {
+        printf("\nUserData not correct\n");
+    }
     do {
         printf("Accept? (y/n)");
-        if (!prompt(yn, sizeof(yn))) {
+        if (!prompt(yn, sizeof yn)) {
             break;
         }
 
@@ -123,7 +161,8 @@ static void handleDiscordJoinRequest(const DiscordUser* request)
 static void discordInit()
 {
     DiscordEventHandlers handlers;
-    memset(&handlers, 0, sizeof(handlers));
+    memset(&handlers, 0, sizeof handlers);
+    handlers.userData = &Data;
     handlers.ready = handleDiscordReady;
     handlers.disconnected = handleDiscordDisconnected;
     handlers.errored = handleDiscordError;
@@ -141,7 +180,7 @@ static void gameLoop()
     StartTime = time(0);
 
     printf("You are standing in an open field west of a white house.\n");
-    while (prompt(line, sizeof(line))) {
+    while (prompt(line, sizeof line)) {
         if (line[0]) {
             if (line[0] == 'q') {
                 break;

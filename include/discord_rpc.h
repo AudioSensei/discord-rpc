@@ -50,12 +50,13 @@ typedef struct DiscordUser {
 } DiscordUser;
 
 typedef struct DiscordEventHandlers {
-    void (*ready)(const DiscordUser* request);
-    void (*disconnected)(int errorCode, const char* message);
-    void (*errored)(int errorCode, const char* message);
-    void (*joinGame)(const char* joinSecret);
-    void (*spectateGame)(const char* spectateSecret);
-    void (*joinRequest)(const DiscordUser* request);
+    void* userData;
+    void (*ready)(const DiscordUser* request, void* userData);
+    void (*disconnected)(int errorCode, const char* message, void* userData);
+    void (*errored)(int errorCode, const char* message, void* userData);
+    void (*joinGame)(const char* joinSecret, void* userData);
+    void (*spectateGame)(const char* spectateSecret, void* userData);
+    void (*joinRequest)(const DiscordUser* request, void* userData);
 } DiscordEventHandlers;
 
 #define DISCORD_REPLY_NO 0
@@ -70,6 +71,7 @@ DISCORD_EXPORT void Discord_Initialize(const char* applicationId,
                                        const char* optionalSteamId,
                                        int optionalPipeNumber);
 DISCORD_EXPORT void Discord_Shutdown(void);
+DISCORD_EXPORT int Discord_GetUsedPipeId(void);
 
 /* checks for incoming messages, dispatches callbacks */
 DISCORD_EXPORT void Discord_RunCallbacks(void);
