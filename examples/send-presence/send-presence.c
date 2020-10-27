@@ -67,7 +67,7 @@ static void handleDiscordReady(const DiscordUser* connectedUser, void* userData)
            connectedUser->discriminator,
            connectedUser->userId,
            Discord_GetUsedPipeId());
-    if (*(int*)userData == Data) {
+    if (userData && *(int*)userData == Data) {
         printf("\nUserData correct\n");
     }
     else {
@@ -78,7 +78,7 @@ static void handleDiscordReady(const DiscordUser* connectedUser, void* userData)
 static void handleDiscordDisconnected(int errcode, const char* message, void* userData)
 {
     printf("\nDiscord: disconnected (%d: %s)\n", errcode, message);
-    if (*(int*)userData == Data) {
+    if (userData && *(int*)userData == Data) {
         printf("\nUserData correct\n");
     }
     else {
@@ -89,7 +89,7 @@ static void handleDiscordDisconnected(int errcode, const char* message, void* us
 static void handleDiscordError(int errcode, const char* message, void* userData)
 {
     printf("\nDiscord: error (%d: %s)\n", errcode, message);
-    if (*(int*)userData == Data) {
+    if (userData && *(int*)userData == Data) {
         printf("\nUserData correct\n");
     }
     else {
@@ -100,7 +100,7 @@ static void handleDiscordError(int errcode, const char* message, void* userData)
 static void handleDiscordJoin(const char* secret, void* userData)
 {
     printf("\nDiscord: join (%s)\n", secret);
-    if (*(int*)userData == Data) {
+    if (userData && *(int*)userData == Data) {
         printf("\nUserData correct\n");
     }
     else {
@@ -111,7 +111,7 @@ static void handleDiscordJoin(const char* secret, void* userData)
 static void handleDiscordSpectate(const char* secret, void* userData)
 {
     printf("\nDiscord: spectate (%s)\n", secret);
-    if (*(int*)userData == Data) {
+    if (userData && *(int*)userData == Data) {
         printf("\nUserData correct\n");
     }
     else {
@@ -127,7 +127,7 @@ static void handleDiscordJoinRequest(const DiscordUser* request, void* userData)
            request->username,
            request->discriminator,
            request->userId);
-    if (*(int*)userData == Data) {
+    if (userData && *(int*)userData == Data) {
         printf("\nUserData correct\n");
     }
     else {
